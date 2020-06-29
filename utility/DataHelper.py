@@ -156,7 +156,7 @@ class Data:
         return users, pos_items, neg_items
 
     def sample_test(self):
-        test_users = self.test_set.keys()
+        test_users = list(self.test_set.keys())
         if self.batch_size <= len(test_users):
             users = np.random.choice(test_users, self.batch_size, replace=False)
         else:
