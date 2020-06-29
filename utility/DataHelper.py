@@ -164,7 +164,7 @@ class Data:
 
         pos_items, neg_items = [], []
         for u in users:
-            pos_items.append(np.random.choice(self.test_set[u], 1))
+            pos_items.append(np.random.choice(self.test_set[u], 1)[0])
             while True:
                 neg_id = np.random.randint(low=0, high=self.n_items, size=1)[0]
                 if neg_id not in (self.test_set[u] + self.train_set[u]):
