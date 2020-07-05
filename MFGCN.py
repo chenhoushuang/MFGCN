@@ -18,6 +18,7 @@ TEST_INTERVAL = 10
 LR = 0.001
 BATCH_SIZE = 128
 TOPKS = [5, 10, 15]
+COEF_L2 = 0.01
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 gpus = [x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU']
@@ -122,7 +123,7 @@ class MFGCN:
 
     def loss_net(self):
         regular_loss = [tf.nn.l2_loss(weight) for weight in self.weights.values()]
-        emb_loss = tf.reduce_mean(regular_loss)
+        emb_loss = tf.reduce_mean(regular_loss)*COEF_L2
         # user_features = tf.nn.embedding_lookup(user_embedding,self.rating['UserID'])
         user_features = tf.nn.embedding_lookup(self.user_features, self.users)
         item_pos_features = tf.nn.embedding_lookup(self.item_features, self.pos_items)
@@ -254,8 +255,8 @@ def train():
             users, pos_items, neg_items = data_generator.sample_test()
             if len(gpus):
                 with tf.device(gpus[-1]):
-                    _, batch_loss, batch_mf_loss, batch_emb_loss = sess.run(
-                        [model.opt, model.loss, model.mf_loss, model.emb_loss],
+                    batch_loss, batch_mf_loss, batch_emb_loss = sess.run(
+                        [model.loss, model.mf_loss, model.emb_loss],
                         feed_dict={model.users: users, model.pos_items: pos_items, model.neg_items: neg_items})
             else:
                 _, batch_loss, batch_mf_loss, batch_emb_loss = sess.run(

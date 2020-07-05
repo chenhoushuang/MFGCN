@@ -91,15 +91,15 @@ class Data:
     def get_norm_adj(self):
         n_movies = self.ftr_size['Movie']
         n_users = self.ftr_size['User']
-        norm_adj = np.zeros([n_users, n_movies], dtype=np.float32)
+        ori_norm_adj = np.zeros([n_users, n_movies], dtype=np.float32)
         # norm_adj[self.data['UserID'], self.data['MovieID']] = 1
         for k in self.train_set.keys():
-            norm_adj[k][self.train_set[k]] = 1
-        norm_adj = norm_adj / np.sqrt(norm_adj.sum(axis=1, keepdims=True))
+            ori_norm_adj[k][self.train_set[k]] = 1
+        norm_adj = ori_norm_adj / np.sqrt(ori_norm_adj.sum(axis=1, keepdims=True))
         norm_adj = norm_adj.T
         # some items may not be clicked by any users
-        index = np.where(norm_adj.sum(axis=1) != 0)
-        norm_adj[index] = norm_adj[index] / np.sqrt(norm_adj.sum(axis=1, keepdims=True))[index]
+        index = np.where(ori_norm_adj.sum(axis=1) != 0)
+        norm_adj[index] = norm_adj[index] / np.sqrt(ori_norm_adj.sum(axis=1, keepdims=True))[index]
         return norm_adj.T
 
     def train_test_split(self):
@@ -156,6 +156,7 @@ class Data:
         return users, pos_items, neg_items
 
     def sample_test(self):
+        n_items = self.ftr_size['Movie']
         test_users = list(self.test_set.keys())
         if self.batch_size <= len(test_users):
             users = np.random.choice(test_users, self.batch_size, replace=False)
@@ -166,7 +167,7 @@ class Data:
         for u in users:
             pos_items.append(np.random.choice(self.test_set[u], 1)[0])
             while True:
-                neg_id = np.random.randint(low=0, high=self.n_items, size=1)[0]
+                neg_id = np.random.randint(low=0, high=n_items, size=1)[0]
                 if neg_id not in (self.test_set[u] + self.train_set[u]):
                     neg_items.append(neg_id)
                     break
